@@ -1,0 +1,30 @@
+[
+    {
+        "asset-name": "async-transfer",
+        "locked-commit": "release-v1.0.200"
+    },
+    {
+        "asset-name": "bt-fw-ifx-cyw55500a1",
+        "locked-commit": "release-v2.2.0"
+    },
+    {
+        "asset-name": "cmsis",
+        "locked-commit": "release-v6.1.200"
+    },
+    {
+        "asset-name": "core-lib",
+        "locked-commit": "release-v1.4.200"
+    },
+    {
+        "asset-name": "core-make",
+        "locked-commit": "release-v3.6.100"
+    },
+    {
+        "asset-name": "device-db",
+        "locked-commit": "release-v4.5.30"
+    },
+    {
+        "asset-name": "mtb-device-support-pse8xxgp",
+        "locked-commit": "release-v1.0.200"
+    }
+]
