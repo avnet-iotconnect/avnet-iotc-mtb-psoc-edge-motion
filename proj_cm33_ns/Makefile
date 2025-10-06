@@ -77,11 +77,11 @@ CORE_NAME=CM33_0
 # tree for source code and builds it. The SOURCES variable can be used to
 # manually add source code to the build process from a location not searched
 # by default, or otherwise not found by the build system.
-SOURCES+=$(wildcard ../shared_src/source/COMPONENT_CM33/*.c)
+SOURCES+=$(wildcard ../shared/source/COMPONENT_CM33/*.c)
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
-INCLUDES+=../shared_src/include
+INCLUDES+=../shared/include
 
 # Custom configuration of mbedtls library.
 MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"configs/mbedtls_user_config.h"'
@@ -121,7 +121,13 @@ ifeq (int8x8, $(NN_TYPE))
 COMPONENTS+=ML_INT8x8
 endif
 
-SEARCH+=../shared_src/retargetio
+# for http client
+DEFINES+=ENABLE_HTTP_CLIENT_LOGS MQTT_DO_NOT_USE_CUSTOM_CONFIG
+DEFINES+=HTTP_DO_NOT_USE_CUSTOM_CONFIG
+# for sntp
+DEFINES+=SNTP_SERVER_DNS
+
+SEARCH+=../shared/retargetio
 
 # Select softfp or hardfp floating point. Default is softfp.
 VFP_SELECT=hardfp

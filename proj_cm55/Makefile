@@ -77,11 +77,11 @@ NPU=U55
 # tree for source code and builds it. The SOURCES variable can be used to
 # manually add source code to the build process from a location not searched
 # by default, or otherwise not found by the build system.
-SOURCES+=$(wildcard ../shared_src/source/COMPONENT_CM55/*.c)
+SOURCES+=$(wildcard ../shared/source/COMPONENT_CM55/*.c)
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
-INCLUDES+=../shared_src/include
+INCLUDES+=../shared/include
 
 # Add additional defines to the build process (without a leading -D).
 DEFINES+=CY_RETARGET_IO_CONVERT_LF_TO_CRLF
@@ -106,9 +106,9 @@ DEFINES+=CY_ML_ARENA_MEM=.cy_socmem_data
 COMPONENTS+=BMI270
 COMPONENTS+=CMSIS_DSP
 SEARCH+=../components
-SEARCH+=../shared_src/imu
+SEARCH+=../shared/imu
 SEARCH+=../Models
-SEARCH+=../shared_src/retargetio
+#SEARCH+=../shared/retargetio
 #endif
 
 # Depending which Neural Network Type, add a specific DEFINE and COMPONENT

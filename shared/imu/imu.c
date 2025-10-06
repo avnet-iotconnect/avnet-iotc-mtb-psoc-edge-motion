@@ -47,6 +47,7 @@
 #include "config.h"
 #include "imu.h"
 #include "human_activity.h"
+#include "ipc_communication.h"
 
 /*******************************************************************************
 * Macros
@@ -414,6 +415,7 @@ cy_rslt_t imu_data_process(void)
     /* To check the status of FIFO watermark interrupt. */
     if (int_status & BMI2_FWM_INT_STATUS_MASK)
     {
+#ifdef PRINT_CM55
         /* Move cursor home */
         //printf("\033[H\n");
 
@@ -422,7 +424,7 @@ cy_rslt_t imu_data_process(void)
 #else
         //printf("DEEPCRAFT Studio Deploy Motion Example - CM55\r\n\n");
 #endif /* COMPONENT_CM33 */
-
+#endif
         /* Turn user led on.*/
         Cy_GPIO_Write(CYBSP_USER_LED_PORT, CYBSP_USER_LED_PIN, CYBSP_LED_STATE_ON);
 
@@ -505,19 +507,25 @@ cy_rslt_t imu_data_process(void)
                             best_label = i;
                         }
                     }
-                    //testing code
-                    if (strcmp(label_text[best_label], "standing") == 0) {
-						motion_data = 0x1111;
-					} else if (strcmp(label_text[best_label], "sitting") == 0) {
-						motion_data = 0x2222;
-					} else {
-						motion_data = 0x0;
-					}
-					data_refresh_flag = 1;
-					//end testing code
+                    
+					ipc_payload_t* payload = cm55_ipc_get_payload_ptr();
 					
-                    //printf("\r\n");
-                    //printf("Output: %-30s\r\n", label_text[best_label]);
+					if (best_label) {
+						payload->label_id = best_label;
+                    	strcpy(payload->label, label_text[best_label]);
+                    	payload->confidence = label_scores[best_label];
+                    } else {
+						payload->label_id = 0;
+                      	strcpy(payload->label, label_text[0]);
+                      	payload->confidence = label_scores[0];
+					}
+                    					
+					#ifdef PRINT_CM55
+                    printf("\r\n");
+                    printf("Output: %-30s\r\n", label_text[best_label]);
+                    #endif
+                    
+                    cm55_ipc_send_to_cm33();
                     break;
                 }
 

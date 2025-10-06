@@ -41,15 +41,15 @@
 /* Header file includes */
 #include "cybsp.h"
 #include "retarget_io_init.h"
-#include "mqtt_task.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "cyabs_rtos.h"
 #include "cyabs_rtos_impl.h"
 #include "cy_time.h"
 #include "cycfg_peripherals.h"
-//IPC
+
 #include "ipc_communication.h"
+#include "app_task.h"
 /******************************************************************************
  * Macros
  ******************************************************************************/
@@ -64,9 +64,6 @@
  */
 #define APP_LPTIMER_INTERRUPT_PRIORITY      (1U)
 
-//ipc
-#define CM33_APP_DELAY_MS           (50U)
-#define RESET_VAL                   (0U)
 
 /*******************************************************************************
  * Global Variables
@@ -74,15 +71,6 @@
 /* LPTimer HAL object */
 static mtb_hal_lptimer_t lptimer_obj;
 typedef mtb_hal_rtc_t rtc_type;
-
-//ipc
-CY_SECTION_SHAREDMEM static ipc_msg_t cm33_msg_data;
-//static volatile uint8_t msg_cmd = RESET_VAL;
-volatile uint32_t msg_val = RESET_VAL;
-
-static bool cm33_pipe2_msg_received = false;
-
-
 
 /*****************************************************************************
  * Function Definitions
@@ -180,34 +168,6 @@ static void setup_tickless_idle_timer(void)
 }
 
 /*******************************************************************************
-* Function Name: cm33_msg_callback
-********************************************************************************
-* Summary:
-*  Callback function called when endpoint-1 (CM33) has received a message
-*
-* Parameters:
-*  msg_data: Message data received throuig IPC
-*
-* Return :
-*  void
-*
-*******************************************************************************/
-void cm33_msg_callback(uint32_t * msg_data) {
-    ipc_msg_t *ipc_recv_msg;
-
-    if (msg_data != NULL)
-    {
-        /* Cast the message received to the IPC structure */
-        ipc_recv_msg = (ipc_msg_t *) msg_data;
-
-        /* Extract the command and data to be processed in the main loop */
-        //msg_cmd = ipc_recv_msg->cmd;
-        msg_val = ipc_recv_msg->value;
-    }
-    
-    cm33_pipe2_msg_received = true;
-}
-/*******************************************************************************
 * Function Name: handle_error
 ********************************************************************************
 * Summary:
@@ -227,21 +187,6 @@ static void handle_error(void) {
     CY_ASSERT(0);
 
     while(true);
-}
-
-static void ipc_data(void) {
-	if(cm33_pipe2_msg_received) {
-		printf("0x%.8x\n\r", (unsigned int) msg_val);
-		cm33_pipe2_msg_received = false;
-    }
-}
-
-void ipc_task(void *pvParameters) {
-    (void) pvParameters;
-	for(;;) {
-		ipc_data();
-		Cy_SysLib_Delay(100);
-	}
 }
 
 /******************************************************************************
@@ -290,25 +235,13 @@ int main(void)
     //IPC ####################################################################################
     /* Setup IPC communication for CM33 */
     cm33_ipc_communication_setup();
-
-    Cy_SysLib_Delay(CM33_APP_DELAY_MS);
-    
-    cy_en_ipc_pipe_status_t pipeStatus;
-    /* Register a callback function to handle events on the CM33 IPC pipe */
-    pipeStatus = Cy_IPC_Pipe_RegisterCallback(CM33_IPC_PIPE_EP_ADDR, &cm33_msg_callback,
-                                              (uint32_t)CM33_IPC_PIPE_CLIENT_ID);
-
-    if (CY_IPC_PIPE_SUCCESS != pipeStatus) {
-        handle_error();
-    }
-    
-    Cy_SysLib_Delay(CM33_APP_DELAY_MS);
+    Cy_SysLib_Delay(50);
 
     /* \x1b[2J\x1b[;H - ANSI ESC sequence to clear screen. */
     //printf("\x1b[2J\x1b[;H");
     printf("===============================================================\n");
 
-    printf("test example\n");
+    printf("PSOC Edge MCU: /IOTCONNECT Client IMU Example\n");
 
     printf("===============================================================\n\n");
 
@@ -316,28 +249,24 @@ int main(void)
     Cy_SysEnableCM55(MXCM55, CY_CM55_APP_BOOT_ADDR, CM55_BOOT_WAIT_TIME_US);
 
     /* Create the MQTT Client task. */
-    /*
-    result = xTaskCreate(mqtt_client_task, "MQTT Client task", MQTT_CLIENT_TASK_STACK_SIZE,
-                NULL, MQTT_CLIENT_TASK_PRIORITY, NULL);
-                
+    
+    result = xTaskCreate(app_task, "IOTC APP task", APP_TASK_STACK_SIZE,
+                NULL, APP_TASK_PRIORITY, NULL);
     if( pdPASS != result ) {
-		handle_app_error();
+		handle_error();
 	}
-	*/
-    result = xTaskCreate(ipc_task, "IPC task", 1024,
-                NULL, MQTT_CLIENT_TASK_PRIORITY, NULL);
-
+	
     if( pdPASS == result )
     {
         /* Start the FreeRTOS scheduler. */
         vTaskStartScheduler();
         
         /* Should never get here. */
-        handle_app_error();
+        handle_error();
     }
     else
     {
-        handle_app_error();
+        handle_error();
     }
 }
 

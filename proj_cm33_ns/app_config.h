@@ -1,7 +1,8 @@
 /******************************************************************************
-* File Name:   subscriber_task.h
+* File Name:   mqtt_client_config.h
 *
-* Description: This file is the public interface of subscriber_task.c
+* Description: This file contains all the configuration macros used by the
+*              MQTT client in this example.
 *
 * Related Document: See README.md
 *
@@ -39,55 +40,37 @@
 * so agrees to indemnify Cypress against all liability.
 *******************************************************************************/
 
-#ifndef SUBSCRIBER_TASK_H_
-#define SUBSCRIBER_TASK_H_
+#ifndef APP_CONFIG_H
+#define APP_CONFIG_H
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "cy_mqtt_api.h"
+#include "iotconnect.h"
 
-/*******************************************************************************
-* Macros
-********************************************************************************/
-/* Task parameters for Subscriber Task. */
-#define SUBSCRIBER_TASK_PRIORITY           (2U)
-#define SUBSCRIBER_TASK_STACK_SIZE         (1024U * 2U)
+// see IotConnectConnectionType: IOTC_CT_AWS or IOTC_CT_AZURE
+#define IOTCONNECT_CONNECTION_TYPE IOTC_CT_AWS
+#define IOTCONNECT_CPID ""
+#define IOTCONNECT_ENV  ""
 
-/* 8-bit value denoting the device (LED) state. */
-#define DEVICE_ON_STATE                    (0x01U)
-#define DEVICE_OFF_STATE                   (0x00U)
+// prefix for the auto-generated name based on chip HWUID
+#define IOTCONNECT_DUID_PREFIX "e84-bm-"
 
-/*******************************************************************************
-* Global Variables
-********************************************************************************/
-/* Commands for the Subscriber Task. */
-typedef enum
-{
-    SUBSCRIBE_TO_TOPIC,
-    UNSUBSCRIBE_FROM_TOPIC,
-    UPDATE_DEVICE_STATE
-} subscriber_cmd_t;
+/*
+ PEM format certificate and private key
+Example:
+#define IOTCONNECT_DEVICE_CERT \
+"-----BEGIN CERTIFICATE-----\n" \
+".... base64 encoded certificate ..."\
+"-----END CERTIFICATE-----"
+#define IOTCONNECT_DEVICE_KEY \
+"-----BEGIN PRIVATE KEY-----\n" \
+".... base64 encoded private key ..."\
+"-----END PRIVATE KEY-----"
+Leave certificate and private key blank if  you wish to use EMEEPROM data to automatically generate the certificate
+and use the runtime configuration for all of the configurable values in this file.
+IMPORTANT NOTE: If you use the EMEEPROM runtime configuration,
+the certificate and private key will be regenerated when you re-flash the board!
+In that case, you would need to delete and re-create your device in IoTConnect.
+*/
+#define IOTCONNECT_DEVICE_CERT
+#define IOTCONNECT_DEVICE_KEY
 
-/* Struct to be passed via the subscriber task queue */
-typedef struct{
-    subscriber_cmd_t cmd;
-    uint8_t data;
-} subscriber_data_t;
-
-/*******************************************************************************
-* Extern Variables
-********************************************************************************/
-extern TaskHandle_t subscriber_task_handle;
-extern QueueHandle_t subscriber_task_q;
-extern uint32_t current_device_state;
-
-/*******************************************************************************
-* Function Prototypes
-********************************************************************************/
-void subscriber_task(void *pvParameters);
-void mqtt_subscription_callback(cy_mqtt_publish_info_t *received_msg_info);
-
-#endif /* SUBSCRIBER_TASK_H_ */
-
-/* [] END OF FILE */
+#endif /* APP_CONFIG_H */

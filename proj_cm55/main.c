@@ -44,13 +44,12 @@
 #include "cyabs_rtos_impl.h"
 
 #include "ipc_communication.h"
-//#ifdef ML_DEEPCRAFT_CM55
+//#include "retarget_io_init.h"
+#ifdef ML_DEEPCRAFT_CM55
 #include "stdlib.h"
-#include "retarget_io_init.h"
-
 #include "imu.h"
 #include "human_activity.h"
-//#endif /* ML_DEEPCRAFT_CM55 */
+#endif /* ML_DEEPCRAFT_CM55 */
 
 /*****************************************************************************
  * Macros
@@ -70,31 +69,23 @@
  */
 #define APP_LPTIMER_INTERRUPT_PRIORITY      (1U)
 
-//ipc
-#define CM55_APP_DELAY_MS           (50U)
-#define RESET_VAL                   (0xffffU)
-
 /*****************************************************************************
  * Global Variables
  *****************************************************************************/
 
 static mtb_hal_lptimer_t lptimer_obj;
 
-//ipc
-CY_SECTION_SHAREDMEM static ipc_msg_t cm55_msg_data;
-static volatile uint8_t msg_cmd = RESET_VAL;
-static volatile uint32_t msg_val = RESET_VAL;
-
-volatile uint32_t motion_data = 0;
+uint32_t motion_data = 0;
 volatile uint8_t data_refresh_flag = 0;
 
 /*****************************************************************************
  * Function Definitions
  *****************************************************************************/
-//#ifdef ML_DEEPCRAFT_CM55
+#ifdef ML_DEEPCRAFT_CM55
 static cy_rslt_t system_init(void);
-static void cm55_ml_deepcraft_task(void);
-//#endif /* ML_DEEPCRAFT_CM55 */
+static void cm55_ml_deepcraft_init(void);
+#endif /* ML_DEEPCRAFT_CM55 */
+
 /*******************************************************************************
  * Function Name: cm55_task
  *******************************************************************************
@@ -114,40 +105,15 @@ static void cm55_ml_deepcraft_task(void);
 static void cm55_task(void * arg)
 {
     CY_UNUSED_PARAMETER(arg);
-    //ipc
-    cy_en_ipc_pipe_status_t pipeStatus;
-        
-    cm55_msg_data.client_id = CM33_IPC_PIPE_CLIENT_ID;
-    cm55_msg_data.intr_mask = CY_IPC_CYPIPE_INTR_MASK_EP2;
-    cm55_msg_data.cmd = IPC_CMD_INIT;
-    cm55_msg_data.value = RESET_VAL;
-    uint8_t count_standing = 0;
-    uint8_t count_sitting = 0;
-    uint8_t counter = 0;
-
-#define STANDING  0x1111
 
     for (;;)
     {
-                                                                 
+        #ifdef ML_DEEPCRAFT_CM55                                                 
 		imu_data_process();
-		if(data_refresh_flag) {
-        	//printf("\n..........ai data is %d.\n\n", motion_data);
-			cm55_msg_data.value = motion_data;
-			pipeStatus = Cy_IPC_Pipe_SendMessage(CM33_IPC_PIPE_EP_ADDR, 
-                                         CM55_IPC_PIPE_EP_ADDR, 
-                                         (void *) &cm55_msg_data, 0);
-
-            data_refresh_flag = 0;
-        } else {
-			//cm55_msg_data.value = RESET_VAL;
-			//pipeStatus = Cy_IPC_Pipe_SendMessage(CM33_IPC_PIPE_EP_ADDR, 
-            //                             CM55_IPC_PIPE_EP_ADDR, 
-            //                             (void *) &cm55_msg_data, 0);
-		}
-		
+		#endif
 		Cy_SysLib_Delay(50);
-		cm55_msg_data.value = RESET_VAL;
+		
+		//vTaskSuspend(NULL);
     }
 }
 
@@ -243,34 +209,6 @@ static void setup_tickless_idle_timer(void)
     cyabs_rtos_set_lptimer(&lptimer_obj);
 }
 
-/*******************************************************************************
-* Function Name: cm33_msg_callback
-********************************************************************************
-* Summary:
-*  Callback function called when endpoint-2 (CM55) has received a message
-*
-* Parameters:
-*  msg_data: Message data received throuig IPC
-*
-* Return :
-*  void
-*
-*******************************************************************************/
-void cm55_msg_callback(uint32_t * msgData)
-{
-    ipc_msg_t *ipc_recv_msg;
-
-    if (msgData != NULL)
-    {
-        /* Cast the message received to the IPC structure */
-        ipc_recv_msg = (ipc_msg_t *) msgData;
-
-        /* Extract the command to be processed in the main loop */
-        msg_val = ipc_recv_msg->value;
-    }
-
-    //cm55_pipe2_msg_received = true;
-}
 
 /*****************************************************************************
  * Function Name: main
@@ -308,28 +246,21 @@ int main(void)
     /* Setup the LPTimer instance for CM55*/
     setup_tickless_idle_timer();
     
+    /* Initialize retarget-io middleware */ 
+    // init_retarget_io(); //for printf
+    
     /* Setup IPC communication for CM55*/
     cm55_ipc_communication_setup();
-
-    Cy_SysLib_Delay(CM55_APP_DELAY_MS);
-
-	/* Register a callback function to handle events on the CM55 IPC pipe */
-    cy_en_ipc_pipe_status_t pipeStatus = Cy_IPC_Pipe_RegisterCallback(CM55_IPC_PIPE_EP_ADDR, &cm55_msg_callback,
-                                                      (uint32_t)CM55_IPC_PIPE_CLIENT_ID);
-
-    if(CY_IPC_PIPE_SUCCESS != pipeStatus)
-    {
-        CY_ASSERT(0);
-    }
-    
-    //#ifdef ML_DEEPCRAFT_CM55
+    Cy_SysLib_Delay(50);
+       
+    #ifdef ML_DEEPCRAFT_CM55
    	/* If ML_DEEPCRAFT_CPU is set as CM55, start the task */
-    cm55_ml_deepcraft_task();
-	//#endif
+    cm55_ml_deepcraft_init();
+	#endif
 
     /* Create the FreeRTOS Task */
     result = xTaskCreate(cm55_task, TASK_NAME,
-                        1024 * 4, NULL,
+                        TASK_STACK_SIZE * 4, NULL,
                         TASK_PRIORITY, NULL);
 
     if( pdPASS == result )
@@ -340,7 +271,7 @@ int main(void)
 
 }
 
-
+#ifdef ML_DEEPCRAFT_CM55
 /*******************************************************************************
 * Function Name: system_init
 ********************************************************************************
@@ -385,7 +316,7 @@ static cy_rslt_t system_init(void)
 *  None
 *
 *******************************************************************************/
-static void cm55_ml_deepcraft_task(void)
+static void cm55_ml_deepcraft_init(void)
 {
     cy_rslt_t result;
 
@@ -412,5 +343,5 @@ static void cm55_ml_deepcraft_task(void)
     }
 */
 }
-
+#endif /* ML_DEEPCRAFT_CM55 */
 /* [] END OF FILE */
