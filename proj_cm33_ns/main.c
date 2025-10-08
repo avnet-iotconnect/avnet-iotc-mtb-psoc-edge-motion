@@ -41,15 +41,15 @@
 /* Header file includes */
 #include "cybsp.h"
 #include "retarget_io_init.h"
+#include "app_task.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "cyabs_rtos.h"
 #include "cyabs_rtos_impl.h"
 #include "cy_time.h"
 #include "cycfg_peripherals.h"
-
 #include "ipc_communication.h"
-#include "app_task.h"
+
 /******************************************************************************
  * Macros
  ******************************************************************************/
@@ -63,7 +63,6 @@
 /* Define the LPTimer interrupt priority number. '1' implies highest priority.
  */
 #define APP_LPTIMER_INTERRUPT_PRIORITY      (1U)
-
 
 /*******************************************************************************
  * Global Variables
@@ -167,28 +166,6 @@ static void setup_tickless_idle_timer(void)
     cyabs_rtos_set_lptimer(&lptimer_obj);
 }
 
-/*******************************************************************************
-* Function Name: handle_error
-********************************************************************************
-* Summary:
-*  Function to handle error status
-*
-* Parameters:
-*  none
-*
-* Return :
-*  void
-*
-*******************************************************************************/
-static void handle_error(void) {
-    /* Disable all interrupts. */
-    __disable_irq();
-
-    CY_ASSERT(0);
-
-    while(true);
-}
-
 /******************************************************************************
  * Function Name: main
  ******************************************************************************
@@ -208,6 +185,7 @@ int main(void)
 {
     cy_rslt_t result;
     rtc_type obj;
+        
     /* Initialize the board support package. */
     
     result = cybsp_init();
@@ -232,41 +210,39 @@ int main(void)
     /* Initialize the CLIB support library */
     mtb_clib_support_init(&obj);
     
-    //IPC ####################################################################################
     /* Setup IPC communication for CM33 */
     cm33_ipc_communication_setup();
     Cy_SysLib_Delay(50);
-
+    
     /* \x1b[2J\x1b[;H - ANSI ESC sequence to clear screen. */
-    //printf("\x1b[2J\x1b[;H");
+    printf("\x1b[2J\x1b[;H");
     printf("===============================================================\n");
 
-    printf("PSOC Edge MCU: /IOTCONNECT Client IMU Example\n");
+    printf("PSOC Edge MCU: /IOTCONNECT Client\n");
 
     printf("===============================================================\n\n");
 
     /* Enable CM55. CY_CORTEX_M55_APPL_ADDR must be updated if CM55 memory layout is changed. */
     Cy_SysEnableCM55(MXCM55, CY_CM55_APP_BOOT_ADDR, CM55_BOOT_WAIT_TIME_US);
 
-    /* Create the MQTT Client task. */
-    
     result = xTaskCreate(app_task, "IOTC APP task", APP_TASK_STACK_SIZE,
                 NULL, APP_TASK_PRIORITY, NULL);
     if( pdPASS != result ) {
-		handle_error();
+		handle_app_error();
 	}
-	
+             
+            
     if( pdPASS == result )
     {
         /* Start the FreeRTOS scheduler. */
         vTaskStartScheduler();
         
         /* Should never get here. */
-        handle_error();
+        handle_app_error();
     }
     else
     {
-        handle_error();
+        handle_app_error();
     }
 }
 

@@ -171,16 +171,16 @@ void cm33_ipc_communication_setup(void)
 
 bool cm33_ipc_has_received_message(void)
 {
-    portENTER_CRITICAL();
+    taskENTER_CRITICAL();
     bool ret = ipc_has_received_message;
     ipc_has_received_message = false;
-    portEXIT_CRITICAL();
+    taskEXIT_CRITICAL();
     return ret;
 }
 
 void cm33_ipc_safe_copy_last_payload(ipc_payload_t* target)
 {
-    portENTER_CRITICAL();
+    taskENTER_CRITICAL();
     memcpy(target, &ipc_recv_msg.payload, sizeof(ipc_payload_t));
-    portEXIT_CRITICAL();
+    taskEXIT_CRITICAL();
 }

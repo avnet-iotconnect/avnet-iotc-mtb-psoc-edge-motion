@@ -51,6 +51,13 @@ TOOLCHAIN=GCC_ARM
 # launch configurations for your IDE.
 CONFIG=Debug
 
-ML_DEEPCRAFT_CPU=cm55
+# Choose which CPU to run the DEEPCRAFT model
+# cm33
+# cm55
+#ML_DEEPCRAFT_CPU=cm55
+
+# Config file for postbuild sign and merge operations.
+# NOTE: Check the JSON file for the command parameters
+COMBINE_SIGN_JSON?=configs/boot_with_extended_boot.json
 
 include ../common_app.mk

@@ -47,11 +47,11 @@
 
 // see IotConnectConnectionType: IOTC_CT_AWS or IOTC_CT_AZURE
 #define IOTCONNECT_CONNECTION_TYPE IOTC_CT_AWS
-#define IOTCONNECT_CPID ""
-#define IOTCONNECT_ENV  ""
+#define IOTCONNECT_CPID "MYCPID"
+#define IOTCONNECT_ENV  "MYENV"
 
 // prefix for the auto-generated name based on chip HWUID
-#define IOTCONNECT_DUID_PREFIX "e84-bm-"
+#define IOTCONNECT_DUID_PREFIX "e84-imu-"
 
 /*
  PEM format certificate and private key
@@ -70,7 +70,7 @@ IMPORTANT NOTE: If you use the EMEEPROM runtime configuration,
 the certificate and private key will be regenerated when you re-flash the board!
 In that case, you would need to delete and re-create your device in IoTConnect.
 */
-#define IOTCONNECT_DEVICE_CERT
-#define IOTCONNECT_DEVICE_KEY
+#define IOTCONNECT_DEVICE_CERT ""
+#define IOTCONNECT_DEVICE_KEY  "" 	
 
 #endif /* APP_CONFIG_H */

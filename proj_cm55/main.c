@@ -48,7 +48,6 @@
 #ifdef ML_DEEPCRAFT_CM55
 #include "stdlib.h"
 #include "imu.h"
-#include "human_activity.h"
 #endif /* ML_DEEPCRAFT_CM55 */
 
 /*****************************************************************************
@@ -75,12 +74,10 @@
 
 static mtb_hal_lptimer_t lptimer_obj;
 
-uint32_t motion_data = 0;
-volatile uint8_t data_refresh_flag = 0;
-
 /*****************************************************************************
  * Function Definitions
  *****************************************************************************/
+
 #ifdef ML_DEEPCRAFT_CM55
 static cy_rslt_t system_init(void);
 static void cm55_ml_deepcraft_init(void);
@@ -107,13 +104,17 @@ static void cm55_task(void * arg)
     CY_UNUSED_PARAMETER(arg);
 
     for (;;)
-    {
-        #ifdef ML_DEEPCRAFT_CM55                                                 
+    {     	
+       	#ifdef ML_DEEPCRAFT_CM55
+       	 /* Invoke the IMU Data Processing function that sends the data for
+         * pre-processing, inferencing, and print the results when enough data
+         * is received.
+         */
 		imu_data_process();
 		#endif
-		Cy_SysLib_Delay(50);
-		
-		//vTaskSuspend(NULL);
+       	Cy_SysLib_Delay(50);
+    	
+        //vTaskSuspend(NULL);
     }
 }
 
@@ -209,7 +210,6 @@ static void setup_tickless_idle_timer(void)
     cyabs_rtos_set_lptimer(&lptimer_obj);
 }
 
-
 /*****************************************************************************
  * Function Name: main
  ******************************************************************************
@@ -242,21 +242,24 @@ int main(void)
 
     /* Enable global interrupts */
     __enable_irq();
-
+    
     /* Setup the LPTimer instance for CM55*/
     setup_tickless_idle_timer();
+    
     
     /* Initialize retarget-io middleware */ 
     // init_retarget_io(); //for printf
     
+    
     /* Setup IPC communication for CM55*/
     cm55_ipc_communication_setup();
+
     Cy_SysLib_Delay(50);
-       
+
     #ifdef ML_DEEPCRAFT_CM55
-   	/* If ML_DEEPCRAFT_CPU is set as CM55, start the task */
+    /* If ML_DEEPCRAFT_CPU is set as CM55, start the task */
     cm55_ml_deepcraft_init();
-	#endif
+	#endif /* ML_DEEPCRAFT_CM55 */
 
     /* Create the FreeRTOS Task */
     result = xTaskCreate(cm55_task, TASK_NAME,
@@ -336,12 +339,8 @@ static void cm55_ml_deepcraft_init(void)
         //printf("System initialization fail\r\n");
         while(1);
     }
-/*
-    for (;;)
-    {
-        imu_data_process();
-    }
-*/
+
 }
 #endif /* ML_DEEPCRAFT_CM55 */
+
 /* [] END OF FILE */

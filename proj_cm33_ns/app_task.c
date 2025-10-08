@@ -151,7 +151,6 @@ static int reporting_interval = 2000;
  *              error code indicating the failure.
  *
  ******************************************************************************/
-
 static cy_rslt_t wifi_connect(void)
 {
     cy_rslt_t result = CY_RSLT_SUCCESS;
@@ -475,7 +474,8 @@ void app_task(void *pvParameters) {
     config.connection_type = IOTCONNECT_CONNECTION_TYPE;
     config.cpid = IOTCONNECT_CPID;
     config.env =  IOTCONNECT_ENV;
-    config.duid = iotc_duid;
+    //config.duid = iotc_duid;
+    config.duid = TEMP_DUID;
     config.qos = 1;
     config.verbose = true;
     config.x509_config.device_cert = IOTCONNECT_DEVICE_CERT;

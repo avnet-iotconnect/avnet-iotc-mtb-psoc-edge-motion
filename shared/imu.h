@@ -45,6 +45,7 @@
 
 #include "cy_result.h"
 #include "stdbool.h"
+#include "human_activity.h"
 
 /******************************************************************************
  * Macros

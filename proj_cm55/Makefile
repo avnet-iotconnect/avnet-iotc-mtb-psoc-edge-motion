@@ -82,6 +82,7 @@ SOURCES+=$(wildcard ../shared/source/COMPONENT_CM55/*.c)
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
 INCLUDES+=../shared/include
+#INCLUDES+=../Models/COMPONENT_CM55
 
 # Add additional defines to the build process (without a leading -D).
 DEFINES+=CY_RETARGET_IO_CONVERT_LF_TO_CRLF
@@ -103,12 +104,10 @@ endif
 DEFINES+=ML_DEEPCRAFT_CM55
 DEFINES+=CY_ML_MODEL_MEM=.cy_socmem_data
 DEFINES+=CY_ML_ARENA_MEM=.cy_socmem_data
-COMPONENTS+=BMI270
 COMPONENTS+=CMSIS_DSP
-SEARCH+=../components
-SEARCH+=../shared/imu
+SEARCH+=../shared/
 SEARCH+=../Models
-#SEARCH+=../shared/retargetio
+SEARCH+=../shared/retargetio/
 #endif
 
 # Depending which Neural Network Type, add a specific DEFINE and COMPONENT
