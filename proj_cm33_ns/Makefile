@@ -92,7 +92,8 @@ DEFINES+=HTTP_DO_NOT_USE_CUSTOM_CONFIG
 # for sntp
 DEFINES+=SNTP_SERVER_DNS
 
-SEARCH+=../shared/retargetio/
+
+SEARCH+=../shared/retarget_io/
 
 # Select softfp or hardfp floating point. Default is softfp.
 VFP_SELECT+=

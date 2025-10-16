@@ -100,15 +100,13 @@ DEFINES+=TF_LITE_STATIC_MEMORY
 endif
 
 # Add define to build code for CM55 and include additional files
-#ifeq (cm55, $(ML_DEEPCRAFT_CPU))
 DEFINES+=ML_DEEPCRAFT_CM55
 DEFINES+=CY_ML_MODEL_MEM=.cy_socmem_data
 DEFINES+=CY_ML_ARENA_MEM=.cy_socmem_data
 COMPONENTS+=CMSIS_DSP
 SEARCH+=../shared/
 SEARCH+=../Models
-SEARCH+=../shared/retargetio/
-#endif
+SEARCH+=../shared/retarget_io/
 
 # Depending which Neural Network Type, add a specific DEFINE and COMPONENT
 ifeq (float, $(NN_TYPE))

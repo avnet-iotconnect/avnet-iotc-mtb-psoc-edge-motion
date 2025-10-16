@@ -12,13 +12,11 @@
 
 # Ninja logs etc.
 .ninja*
-.ninja_log
 
 # created by project creator or VSCode during loading:
 .clangd
 project_info.json
 .cache/
-.clang-format
 
 # generated into source dir during build:
 nsc_veneer.o
