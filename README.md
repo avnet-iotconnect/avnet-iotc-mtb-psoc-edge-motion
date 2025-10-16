@@ -50,7 +50,7 @@ To setup the project, please refer to the
 
 - Once the board connects to /IOTCONNECT, it will begin sending telemetry packets similar to the example below:
 ```
->: {"d":[{"d":{"version":"1.1.0","random":32,"confidence":86,"class_id":2,"class":"standing","event_detected":true}}]}
+>: {"d":[{"d":{"version":"1.1.0","random":32,"confidence":86,"class_id":1,"class":"standing","event_detected":true}}]}
 ```
 
 - While holding the kit board in your hand, perform various activities 
