@@ -15,6 +15,12 @@
             "description": "A randomly generated integer",
             "unit": null
         },
+        {
+            "name": "confidence",
+            "type": "INTEGER",
+            "description": "Detection (or non-detection) confidence as percentage",
+            "unit": null
+        },
 		{
             "name": "class_id",
             "type": "INTEGER",
